@@ -115,11 +115,30 @@
       <div class="post-placeholder"></div>
       <div class="post-content-main">
         <div class="post-content">
-          
+          <p>基于Zookeeper实现HA</p>
+<h3 id="Spark-Standalone-HA基本配置与操作"><a href="#Spark-Standalone-HA基本配置与操作" class="headerlink" title="Spark-Standalone HA基本配置与操作"></a>Spark-Standalone HA基本配置与操作</h3><p>前提: 确保Zookeeper 和 HDFS 均已经启动</p>
+<p>先在spark-env.sh中, 删除: SPARK_MASTER_HOST&#x3D;node1</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">在spark-env.sh中, 增加:</span><br><span class="line">SPARK_DAEMON_JAVA_OPTS=<span class="string">&quot;-Dspark.deploy.recoveryMode=ZOOKEEPER -</span></span><br><span class="line"><span class="string">Dspark.deploy.zookeeper.url=node1:2181,node2:2181,node3:2181 -</span></span><br><span class="line"><span class="string">Dspark.deploy.zookeeper.dir=/spark-ha&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>将spark-env.sh 分发到每一台服务器上</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scp spark-env.sh node2:/export/server/spark/conf/</span><br><span class="line">scp spark-env.sh node3:/export/server/spark/conf/</span><br></pre></td></tr></table></figure>
+
+<p>停止当前StandAlone集群</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sbin/stop-all.sh</span><br></pre></td></tr></table></figure>
+
+<p>启动集群:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在node1上 启动一个master 和全部worker</span></span><br><span class="line">sbin/start-all.sh</span><br><span class="line"><span class="comment"># 注意, 下面命令在node2上执行</span></span><br><span class="line">sbin/start-master.sh</span><br><span class="line"><span class="comment"># 在node2上启动一个备用的master进程</span></span><br></pre></td></tr></table></figure>
+
+<p>查看WebUI <a target="_blank" rel="noopener" href="http://node1:8080/">http://node1:8080/</a>  <a target="_blank" rel="noopener" href="http://node2:8080/">http://node2:8080/</a> 默认情况下,先启动Master就为 Active Master,如下截图所示: 如果将node1的Master进程Kill 掉,node2的Master在1Min-2Min左 右会接替node1的Master作用。 也 就是在执行过程中,使用jps 查看 Active Master进程ID,将其kill,观察 Master是否自动切换与应用运行完 成结束。(需要等待1-2min)</p>
+
         </div>
       </div>
       <div class="post-placeholder post-toc-container">
         <!-- toc -->
+        
+          <!-- tocbot -->
+<nav class="post-toc toc"></nav>
+
         
       </div>
    </div>
